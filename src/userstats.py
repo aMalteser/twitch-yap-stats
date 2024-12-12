@@ -23,7 +23,7 @@ class UserStats:
     Calculate 'yap' factor based on collected stats, many magic numbers are found here
     '''
     def calc_yap_factor(self) -> float:
-        scalar = len(self.unique_words) ** 0.5
+        scalar = self.letter_count ** 0.5
         uniq_word_ratio = (len(self.unique_words) ** 1.2) / self.messages
         ln_avg_letters = math.log(self.get_average_message_length())
         return scalar * (uniq_word_ratio + ln_avg_letters)
