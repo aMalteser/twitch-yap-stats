@@ -1,3 +1,4 @@
+import math
 from twitchAPI.twitch import Twitch
 from twitchAPI.oauth import UserAuthenticator
 from twitchAPI.type import AuthScope, ChatEvent
@@ -8,12 +9,12 @@ import os
 from userstats import UserStats
 from collections import defaultdict
 import pandas as pd
-import numpy as np
 import scipy.stats as stats
 from tabulate import tabulate
 from datetime import datetime
 import pytz
 import typing
+import validators
 
 
 load_dotenv()
@@ -24,21 +25,29 @@ EXCLUDED_USERS = set(os.getenv('EXCLUDED_USERS').split(','))
 
 USER_SCOPE = [AuthScope.CHAT_READ]
 
-YAP_STATS = {}
-WORDS_COUNT = defaultdict(int)
+YAP_STATS: dict[str, UserStats] = {}
+WORDS_COUNT: dict[str, int] = defaultdict(int)
 
-START_TIME = str()
+START_TIME: str
 
 
-def save_df(df: pd.DataFrame, name: str, encode_type: str) -> None:
+def save_df(df_full: pd.DataFrame, df_brief: pd.DataFrame, name: str, encode_type: str) -> None:
     # equivalent of ./src/../output/TARGET_CHANNEL
     abs_path = os.path.abspath(__file__)
     output_path = os.path.join(os.path.dirname(abs_path), os.pardir, 'output', TARGET_CHANNEL)
     if not os.path.exists(output_path):
         os.makedirs(output_path)
         
-    with open(os.path.join(output_path, f'{START_TIME}-{name}'), 'w', encoding=encode_type) as f:
-        f.write(tabulate(df, headers='keys', tablefmt='psql', showindex=False))
+    # Full log file
+    df_full.to_csv(os.path.join(output_path, f'{START_TIME}-{name}.csv'), mode='w', encoding=encode_type, index=False)
+    
+    # df_brief overwrites the same file, is more consise so that it can be put in OBS
+    with open(os.path.join(output_path, f'{name}.txt'), 'w', encoding=encode_type) as f:
+        f.write(tabulate(df_brief, headers='keys', tablefmt='psql', showindex=False))
+
+
+def logistic(x: float):
+    return 2.2 / (1.0 + math.exp(-1.2 * x)) + x / 5.0
 
 
 def save_yap_stats() -> None:
@@ -47,21 +56,24 @@ def save_yap_stats() -> None:
     letter_counts = [u.letter_count for u in users_stats]
     message_counts = [u.messages for u in users_stats]
     unique_counts = [len(u.unique_words) for u in users_stats]
-    avg_letter_counts = [u.get_average_message_length() for u in users_stats]
+    avg_msg_lens = [u.get_average_message_length() for u in users_stats]
 
-    a = np.array(letter_counts)
-    z_scores = stats.zscore(a)
+    yap_factors = [u.calc_yap_factor() for u in users_stats]
+    yap_scaled = stats.zscore(yap_factors)
+    yap_costs = list(map(lambda x: logistic(x), yap_scaled))
+
     yap_data = {
         "username": usernames,
-        "z_yap": z_scores,
+        "yap cost": yap_costs,
         "letters": letter_counts,
         "messages": message_counts,
-        "avg. letters": avg_letter_counts,
-        "uniq. words": unique_counts
+        "avg. message len": avg_msg_lens,
+        "vocab": unique_counts
     }
     yap_df = pd.DataFrame(yap_data)
-    yap_df.sort_values(by=['letter count', 'username'], inplace=True, ascending=False)
-    save_df(yap_df, 'yap.txt', 'UTF-8')
+    yap_df.sort_values(by=['yap cost'], inplace=True, ascending=False)
+    yap_df_brief = yap_df.filter(['username', 'yap cost', 'avg. message len', 'vocab'], axis=1)
+    save_df(yap_df, yap_df_brief, 'yap', 'UTF-8')
 
 
 def save_word_stats() -> None:
@@ -73,7 +85,17 @@ def save_word_stats() -> None:
     }
     words_df = pd.DataFrame(words_data)
     words_df.sort_values(by=['count'], inplace=True, ascending=False)
-    save_df(words_df, 'words.txt', 'UTF-16') # UTF-16 needed for certain emojis
+    save_df(words_df, words_df, 'words', 'UTF-16') # UTF-16 needed for certain emojis
+
+
+def check_url(word_list: list[str]) -> list[bool]:
+    return map(lambda x: validators.url(x), word_list)
+
+
+def filter_word_list(word_list: list[str]) -> list[str]:
+    url_filter = check_url(word_list)
+    overall_filter = [all(i) for i in zip(url_filter)]
+    return list(filter(overall_filter, word_list))
 
 
 async def on_ready(ready_event: EventData) -> None:
