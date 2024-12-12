@@ -1,3 +1,5 @@
+# Taken from: https://pytwitchapi.dev/en/stable/tutorial/user-auth-headless.html
+
 import asyncio
 from twitchAPI.twitch import Twitch
 from twitchAPI.oauth import UserAuthenticator
