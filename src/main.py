@@ -13,6 +13,7 @@ import scipy.stats as stats
 from tabulate import tabulate
 from datetime import datetime
 import pytz
+import typing
 
 
 load_dotenv()
@@ -29,18 +30,18 @@ WORDS_COUNT = defaultdict(int)
 START_TIME = str()
 
 
-def save_df(df, name):
+def save_df(df: pd.DataFrame, name: str, encode_type: str) -> None:
+    # equivalent of ./src/../output/TARGET_CHANNEL
     abs_path = os.path.abspath(__file__)
     output_path = os.path.join(os.path.dirname(abs_path), os.pardir, 'output', TARGET_CHANNEL)
     if not os.path.exists(output_path):
         os.makedirs(output_path)
         
-    # UTF-16 is needed to encode emojis and most other text
-    with open(os.path.join(output_path, f'{START_TIME}-{name}'), 'w', encoding='UTF-16') as f:
+    with open(os.path.join(output_path, f'{START_TIME}-{name}'), 'w', encoding=encode_type) as f:
         f.write(tabulate(df, headers='keys', tablefmt='psql', showindex=False))
 
 
-def save_yap_stats():
+def save_yap_stats() -> None:
     users_stats = list(YAP_STATS.values())
     usernames = [u.username for u in users_stats]
     letter_counts = [u.letter_count for u in users_stats]
@@ -53,17 +54,18 @@ def save_yap_stats():
     yap_data = {
         "username": usernames,
         "z_yap": z_scores,
-        "letter count": letter_counts,
-        "messages sent": message_counts,
-        "average letter count": avg_letter_counts,
-        "unique words": unique_counts
+        "letters": letter_counts,
+        "messages": message_counts,
+        "avg. letters": avg_letter_counts,
+        "uniq. words": unique_counts
     }
     yap_df = pd.DataFrame(yap_data)
     yap_df.sort_values(by=['letter count', 'username'], inplace=True, ascending=False)
-    save_df(yap_df, 'yap.txt')
+    save_df(yap_df, 'yap.txt', 'UTF-8')
 
 
-def save_word_stats():
+def save_word_stats() -> None:
+    # Relies on dictionaries being ordered
     words, counts = list(WORDS_COUNT.keys()), list(WORDS_COUNT.values())
     words_data = {
         "word": words,
@@ -71,10 +73,10 @@ def save_word_stats():
     }
     words_df = pd.DataFrame(words_data)
     words_df.sort_values(by=['count'], inplace=True, ascending=False)
-    save_df(words_df, 'words.txt')
+    save_df(words_df, 'words.txt', 'UTF-16') # UTF-16 needed for certain emojis
 
 
-async def on_ready(ready_event: EventData):
+async def on_ready(ready_event: EventData) -> None:
     global START_TIME
     tz_UTC = pytz.timezone('UTC')
     START_TIME = datetime.now(tz_UTC).strftime('%y-%m-%d-%H-%M')
@@ -82,23 +84,23 @@ async def on_ready(ready_event: EventData):
     await ready_event.chat.join_room(TARGET_CHANNEL)
 
 
-async def on_message(msg: ChatMessage):
+async def on_message(msg: ChatMessage) -> None:
     if msg.user.name in EXCLUDED_USERS:
         return
     if msg.user.name not in YAP_STATS:
         YAP_STATS[msg.user.name] = UserStats(msg.user.name)
     user_stats = YAP_STATS[msg.user.name]
 
-    words = msg.text.strip().split()
+    words = msg.text.strip().lower().split()
     user_stats.update_stats(words)
 
     for w in words:
         WORDS_COUNT[w] += 1
     # Uncomment for logging
-    print(f'{msg.user.name}\'s letter count is now: {user_stats.letter_count}, with {user_stats.messages} messages')
+    # print(f'{msg.user.name}\'s letter count is now: {user_stats.letter_count}, with {user_stats.messages} messages')
 
 
-async def run():
+async def run() -> None:
     twitch = await Twitch(APP_ID, APP_SECRET)
     auth = UserAuthenticator(twitch, USER_SCOPE)
     token, refresh_token = await auth.authenticate()
@@ -118,6 +120,7 @@ async def run():
         # now we can close the chat bot and the twitch api client
         chat.stop()
         await twitch.close()
+        # Save once the twitch thread has closed, to not get anymore writes to dictionaries
         save_yap_stats()
         save_word_stats()
 
