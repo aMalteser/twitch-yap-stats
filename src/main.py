@@ -46,8 +46,8 @@ def save_df(df_full: pd.DataFrame, df_brief: pd.DataFrame, name: str, encode_typ
         f.write(tabulate(df_brief, headers='keys', tablefmt='psql', showindex=False))
 
 
-def logistic(x: float):
-    return 2.2 / (1.0 + math.exp(-1.2 * x)) + x / 5.0
+def curve(x: float):
+    return math.pow(2, x)
 
 
 def save_yap_stats() -> None:
@@ -59,8 +59,10 @@ def save_yap_stats() -> None:
     avg_msg_lens = [u.get_average_message_length() for u in users_stats]
 
     yap_factors = [u.calc_yap_factor() for u in users_stats]
-    yap_scaled = stats.zscore(yap_factors)
-    yap_costs = list(map(lambda x: logistic(x), yap_scaled))
+    # Yap factors are by nature exponentional, taking the logarithm produces nicer results
+    scaled_yap_factors = list(map(lambda x: math.log(x), yap_factors))
+    yap_scaled = stats.zscore(scaled_yap_factors)
+    yap_costs = list(map(lambda x: curve(x), yap_scaled))
 
     yap_data = {
         "username": usernames,
