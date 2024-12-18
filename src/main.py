@@ -31,7 +31,7 @@ WORDS_COUNT: dict[str, int] = defaultdict(int)
 START_TIME: str
 
 
-def save_df(df_full: pd.DataFrame, df_brief: pd.DataFrame, name: str, encode_type: str) -> None:
+def save_df(df_full: pd.DataFrame, df_brief: pd.DataFrame, name: str, encode_type: str, padding: int = 0) -> None:
     # equivalent of ./src/../output/TARGET_CHANNEL
     abs_path = os.path.abspath(__file__)
     output_path = os.path.join(os.path.dirname(abs_path), os.pardir, 'output', TARGET_CHANNEL)
@@ -43,7 +43,8 @@ def save_df(df_full: pd.DataFrame, df_brief: pd.DataFrame, name: str, encode_typ
     
     # df_brief overwrites the same file, is more consise so that it can be put in OBS
     with open(os.path.join(output_path, f'{name}.txt'), 'w', encoding=encode_type) as f:
-        f.write(tabulate(df_brief, headers='keys', tablefmt='psql', showindex=False))
+        if padding > 0:
+            f.write(tabulate(df_brief, headers='keys', tablefmt='psql', showindex=False))
 
 
 def curve(x: float):
@@ -75,7 +76,7 @@ def save_yap_stats() -> None:
     yap_df = pd.DataFrame(yap_data)
     yap_df.sort_values(by=['yap cost'], inplace=True, ascending=False)
     yap_df_brief = yap_df.filter(['username', 'yap cost', 'avg. message len', 'vocab'], axis=1)
-    save_df(yap_df, yap_df_brief, 'yap', 'UTF-8')
+    save_df(yap_df, yap_df_brief, 'yap', 'UTF-8', 0)
 
 
 def save_word_stats() -> None:
@@ -87,7 +88,7 @@ def save_word_stats() -> None:
     }
     words_df = pd.DataFrame(words_data)
     words_df.sort_values(by=['count'], inplace=True, ascending=False)
-    save_df(words_df, words_df, 'words', 'UTF-16') # UTF-16 needed for certain emojis
+    save_df(words_df, words_df, 'words', 'UTF-16', 0) # UTF-16 needed for certain emojis
 
 
 def check_url(word_list: list[str]) -> list[bool]:
