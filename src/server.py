@@ -5,12 +5,9 @@ from twitchAPI.twitch import Twitch
 from twitchAPI.oauth import UserAuthenticator
 from twitchAPI.type import AuthScope, TwitchAPIException
 from flask import Flask, redirect, request
-from dotenv import load_dotenv
-import os
+from usersettings import UserSettings
 
-load_dotenv()
-APP_ID = os.getenv('APP_ID')
-APP_SECRET = os.getenv('APP_SECRET')
+
 TARGET_SCOPE = [AuthScope.CHAT_EDIT, AuthScope.CHAT_READ]
 MY_URL = 'http://localhost:17563/login/confirm'
 
@@ -43,8 +40,19 @@ async def login_confirm():
 
 async def twitch_setup():
     global twitch, auth
-    twitch = await Twitch(APP_ID, APP_SECRET)
+    twitch = await Twitch(UserSettings.settings['App ID'], UserSettings.settings['App Secret'])
     auth = UserAuthenticator(twitch, TARGET_SCOPE, url=MY_URL)
 
 
-asyncio.run(twitch_setup())
+
+if __name__ == '__main__':
+    user_settings = UserSettings()
+    if user_settings.settings['App ID'] == '':
+        user_settings.settings['App ID'] = input('Enter App ID (Do not expose): ')
+        user_settings.save_to_file()
+    if user_settings.settings['App Secret'] == '':
+        user_settings.settings['App Secret'] = input('Enter App Secret (Do not expose): ')
+        user_settings.save_to_file()
+    
+    asyncio.run(twitch_setup())
+    print('If no errors printed, server is running')

@@ -19,14 +19,15 @@ Silly python script to get some stats from twitch chat, such as: which user yaps
 - Click on "Manage" on the application you just created
 - The Client ID should already be at the bottom
 - Click New Secret to generate a Secret ID
+- Keep these safe and ready to input later on, don't leak them
 
 ### Running the Program
 
 #### NOTE HAS ONLY BEEN TESTED ON PYTHON 3.12
 
-- Populate `.env` with App ID and Secret, target channel and excluded users (e.g. bots, streamer)
 - Install all requirements using `pip install -r requirements.txt`
 - Run `server.py` (This will run in the background and needs to be done only once)
+  - You will be prompted to input your Client ID and Secret if not present
 - Run `main.py`
 
 ## Todo
@@ -34,8 +35,8 @@ Silly python script to get some stats from twitch chat, such as: which user yaps
 - Check if stream is live
   - Update flow, dynamically set `DATE` variable
 - Allow it to work for multiple streams
-- Nicer user access to customisability
-- Exclude links, **maybe** emojis/punctuation
+- ~~Nicer user access to customisability~~
+- ~~Exclude links~~, **maybe** emojis/punctuation
 - *Possibly* switch to App authentication (possibly eliminate use of `server.py`)
 - Allow to simultaneously run on multiple channels
 

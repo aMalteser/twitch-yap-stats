@@ -1,27 +1,21 @@
-import math
 from twitchAPI.twitch import Twitch
 from twitchAPI.oauth import UserAuthenticator
 from twitchAPI.type import AuthScope, ChatEvent
 from twitchAPI.chat import Chat, EventData, ChatMessage
-import asyncio
-from dotenv import load_dotenv
-import os
+from usersettings import UserSettings
 from userstats import UserStats
 from collections import defaultdict
-import pandas as pd
-import scipy.stats as stats
 from tabulate import tabulate
 from datetime import datetime
+import pandas as pd
+import scipy.stats as stats
+import asyncio
+import os
+import math
 import pytz
 import typing
 import validators
 
-
-load_dotenv()
-APP_ID = os.getenv('APP_ID')
-APP_SECRET = os.getenv('APP_SECRET')
-TARGET_CHANNEL = os.getenv('TARGET_CHANNEL')
-EXCLUDED_USERS = set(os.getenv('EXCLUDED_USERS').split(','))
 
 USER_SCOPE = [AuthScope.CHAT_READ]
 
@@ -31,10 +25,11 @@ WORDS_COUNT: dict[str, int] = defaultdict(int)
 START_TIME: str
 
 
-def save_df(df_full: pd.DataFrame, df_brief: pd.DataFrame, name: str, encode_type: str, padding: int = 0) -> None:
+def save_df(df_full: pd.DataFrame, df_brief: pd.DataFrame, name: str, encode_type: str) -> None:
+    settings = UserSettings().settings
     # equivalent of ./src/../output/TARGET_CHANNEL
     abs_path = os.path.abspath(__file__)
-    output_path = os.path.join(os.path.dirname(abs_path), os.pardir, 'output', TARGET_CHANNEL)
+    output_path = os.path.join(os.path.dirname(abs_path), os.pardir, 'output', settings['Target Channel'])
     if not os.path.exists(output_path):
         os.makedirs(output_path)
         
@@ -43,8 +38,10 @@ def save_df(df_full: pd.DataFrame, df_brief: pd.DataFrame, name: str, encode_typ
     
     # df_brief overwrites the same file, is more consise so that it can be put in OBS
     with open(os.path.join(output_path, f'{name}.txt'), 'w', encoding=encode_type) as f:
-        if padding > 0:
-            f.write(tabulate(df_brief, headers='keys', tablefmt='psql', showindex=False))
+        if UserSettings.settings['Padding'] > 0:
+            f.write('\n' * UserSettings.settings['Padding'])
+
+        f.write(tabulate(df_brief, headers='keys', tablefmt='psql', showindex=False))
 
 
 def curve(x: float):
@@ -96,37 +93,44 @@ def check_url(word_list: list[str]) -> list[bool]:
 
 
 def filter_word_list(word_list: list[str]) -> list[str]:
-    url_filter = check_url(word_list)
-    overall_filter = [all(i) for i in zip(url_filter)]
-    return list(filter(overall_filter, word_list))
+    url_check = check_url(word_list)
+    return [word for word, is_url in zip(word_list, url_check) if not is_url]
 
 
 async def on_ready(ready_event: EventData) -> None:
     global START_TIME
     tz_UTC = pytz.timezone('UTC')
     START_TIME = datetime.now(tz_UTC).strftime('%y-%m-%d-%H-%M')
-    print(f'Bot is ready for work, joining channel {TARGET_CHANNEL}')
-    await ready_event.chat.join_room(TARGET_CHANNEL)
+
+    settings = UserSettings().settings
+    print(f'Bot is ready for work, joining channel {settings["Target Channel"]}')
+    await ready_event.chat.join_room(settings['Target Channel'])
 
 
 async def on_message(msg: ChatMessage) -> None:
-    if msg.user.name in EXCLUDED_USERS:
+    if msg.user.name in set(UserSettings().settings['Excluded Users']):
         return
+    
+    words = filter_word_list(msg.text.strip().lower().split())
+    if len(words) == 0:
+        return
+    
     if msg.user.name not in YAP_STATS:
         YAP_STATS[msg.user.name] = UserStats(msg.user.name)
     user_stats = YAP_STATS[msg.user.name]
-
-    words = msg.text.strip().lower().split()
     user_stats.update_stats(words)
 
     for w in words:
         WORDS_COUNT[w] += 1
-    # Uncomment for logging
-    # print(f'{msg.user.name}\'s letter count is now: {user_stats.letter_count}, with {user_stats.messages} messages')
+    
+    if UserSettings().settings['Logging']:
+        print(f'{msg.user.name} has now sent {user_stats.messages} messages')
 
 
-async def run() -> None:
-    twitch = await Twitch(APP_ID, APP_SECRET)
+async def run_bot() -> None:
+    settings = UserSettings().settings
+
+    twitch = await Twitch(settings['App ID'], settings['App Secret'])
     auth = UserAuthenticator(twitch, USER_SCOPE)
     token, refresh_token = await auth.authenticate()
     await twitch.set_user_authentication(token, USER_SCOPE, refresh_token)
@@ -146,9 +150,87 @@ async def run() -> None:
         chat.stop()
         await twitch.close()
         # Save once the twitch thread has closed, to not get anymore writes to dictionaries
+        print('Saving stats')
         save_yap_stats()
         save_word_stats()
 
 
+def clear() -> None:
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+
+def print_settings() -> None:
+    user_settings = UserSettings()
+    if user_settings.settings['App ID'] == '':
+        print('App ID not set', end=', ')
+    else:
+        print('App ID set', end=', ')
+    if user_settings.settings['App Secret'] == '':
+        print('App Secret not set')
+    else:
+        print('App Secret set')
+    
+    print(f'Target Channel: {user_settings.settings['Target Channel']}')
+    print(f'Excluded Users: {list(user_settings.settings['Excluded Users'])}')
+    print(f'Logging: {'Enabled' if user_settings.settings['Logging'] else 'Disabled'}')
+    print(f'Padding: {user_settings.settings['Padding']}', end='\n\n')
+
+
+def handle_option(option: str) -> None:
+    user_settings = UserSettings()
+    settings = user_settings.settings
+    match option:
+        case '1':
+            settings['App ID'] = input('Enter App ID (Do not expose): ')
+        case '2':
+            settings['App Secret'] = input('Enter App Secret (Do not expose): ')
+        case '3':
+            settings['Target Channel'] = input('Enter Target Channel: ').lower()
+        case '4':
+            settings['Excluded Users'].symmetric_difference_update([input('Enter user to toggle: ').lower()])
+        case '5':
+            settings['Logging'] = not settings['Logging']
+        case '6':
+            try:
+                new_padding = max(0, int(input('Enter padding: ')))
+                settings['Padding'] = new_padding
+            except ValueError:
+                print('Invalid padding')
+
+    user_settings.save_to_file()
+    
+
+def print_options() -> None:
+    print('1. Set App ID')
+    print('2. Set App Secret')
+    print('3. Set Target Channel')
+    print('4. Toggle Excluded User')
+    print('5. Toggle Logging')
+    print('6. Set Padding')
+    print('r. Start Bot')
+    print('q. Quit', end='\n\n')
+
+
 if __name__ == '__main__':
-    asyncio.run(run())
+    user_input: str = ''
+    while True:
+        clear()
+        print_settings()
+        print_options()
+        user_input = input('Enter option: ').lower()
+        if user_input == 'r':
+            break
+        if user_input == 'q':
+            exit()
+        handle_option(user_input)
+        
+    if UserSettings().settings['App ID'] == '':
+        print('App ID not set, exiting')
+        exit()
+    if UserSettings().settings['App Secret'] == '':
+        print('App Secret not set, exiting')
+        exit()
+    if UserSettings().settings['Target Channel'] == '':
+        print('Target Channel not set, exiting')
+
+    asyncio.run(run_bot())
