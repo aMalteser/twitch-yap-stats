@@ -73,7 +73,7 @@ def save_yap_stats() -> None:
     yap_df = pd.DataFrame(yap_data)
     yap_df.sort_values(by=['yap cost'], inplace=True, ascending=False)
     yap_df_brief = yap_df.filter(['username', 'yap cost', 'avg. message len', 'vocab'], axis=1)
-    save_df(yap_df, yap_df_brief, 'yap', 'UTF-8', 0)
+    save_df(yap_df, yap_df_brief, 'yap', 'UTF-8')
 
 
 def save_word_stats() -> None:
@@ -85,7 +85,7 @@ def save_word_stats() -> None:
     }
     words_df = pd.DataFrame(words_data)
     words_df.sort_values(by=['count'], inplace=True, ascending=False)
-    save_df(words_df, words_df, 'words', 'UTF-16', 0) # UTF-16 needed for certain emojis
+    save_df(words_df, words_df, 'words', 'UTF-16') # UTF-16 needed for certain emojis
 
 
 def check_url(word_list: list[str]) -> list[bool]:
@@ -206,7 +206,7 @@ def print_options() -> None:
     print('3. Set Target Channel')
     print('4. Toggle Excluded User')
     print('5. Toggle Logging')
-    print('6. Set Padding')
+    print('6. Set Padding', end='\n\n')
     print('r. Start Bot')
     print('q. Quit', end='\n\n')
 
