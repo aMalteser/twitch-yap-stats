@@ -1,15 +1,13 @@
-import math
-
 class UserStats:
-    def __init__(self, username) -> None:
-        self.username = username
-        self.letter_count = 0
-        self.word_count = 0
-        self.messages = 0
-        self.unique_words = set()
+    def __init__(self, username: str) -> None:
+        self.username: str = username
+        self.letter_count: int = 0
+        self.word_count: int = 0
+        self.messages: int = 0
+        self.unique_words: set[str] = set()
     
 
-    def update_stats(self, words) -> None:
+    def update_stats(self, words: list[str]) -> None:
         self.letter_count += len(''.join(words))
         self.word_count += len(words)
         self.messages += 1
@@ -23,7 +21,6 @@ class UserStats:
     Calculate 'yap' factor based on collected stats, many magic numbers are found here
     '''
     def calc_yap_factor(self) -> float:
-        scalar = self.letter_count ** 0.5
+        scalar = self.letter_count ** 0.75
         uniq_word_ratio = (len(self.unique_words) ** 1.2) / self.messages
-        ln_avg_letters = math.log(self.get_average_message_length())
-        return scalar * (uniq_word_ratio + ln_avg_letters)
+        return scalar * (uniq_word_ratio + self.get_average_message_length())
