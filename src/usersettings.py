@@ -8,17 +8,17 @@ class UserSettings:
     settings: dict
     file_loc: os.path
 
-    def __new__(cls):
+    def __new__(cls) -> 'UserSettings':
         with cls._lock:
             if cls._instance is None:
                 cls._instance = super(UserSettings, cls).__new__(cls)
                 cls.settings = {
-                'App ID': '',
-                'App Secret': '',
-                'Target Channel':'',
-                'Excluded Users': set(),
-                'Logging': True,
-                'Padding': 0
+                    'App ID': '',
+                    'App Secret': '',
+                    'Target Channel':'',
+                    'Excluded Users': set(),
+                    'Logging': True,
+                    'Padding': 0
                 }
                 cls.file_loc = os.path.join(os.path.abspath(__file__), os.pardir, os.pardir, 'user_settings.json')
                 cls.load_from_file(cls)

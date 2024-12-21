@@ -56,3 +56,4 @@ if __name__ == '__main__':
     
     asyncio.run(twitch_setup())
     print('If no errors printed, server is running')
+    
