@@ -96,17 +96,19 @@ async def run_bot() -> None:
 
 
 if __name__ == '__main__':
-    prompt_loop()
+    while True:
+        prompt_loop()
 
-    settings = UserSettings().settings
-    if settings['App ID'] == '':
-        print('App ID not set, exiting')
-        exit()
-    if settings['App Secret'] == '':
-        print('App Secret not set, exiting')
-        exit()
-    if settings['Target Channel'] == '':
-        print('Target Channel not set, exiting')
-    
-    asyncio.run(run_bot())
+        settings = UserSettings().settings
+        if settings['App ID'] == '':
+            print('App ID not set, exiting')
+            exit()
+        if settings['App Secret'] == '':
+            print('App Secret not set, exiting')
+            exit()
+        if settings['Target Channel'] == '':
+            print('Target Channel not set, exiting')
+            exit()
+        
+        asyncio.run(run_bot())
     
