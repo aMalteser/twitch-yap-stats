@@ -40,5 +40,6 @@ class UserSettings:
         with open(cls.file_loc, 'r') as fp:
             try:
                 cls.settings.update(json.load(fp))
+                cls.settings['Excluded Users'] = set(cls.settings['Excluded Users'])
             except json.JSONDecodeError:
                 cls.save_to_file(cls)

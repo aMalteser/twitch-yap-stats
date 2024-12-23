@@ -48,7 +48,7 @@ def handle_message(username: str, words: list[str]) -> None:
 async def on_message(msg: ChatMessage) -> None:
     settings = UserSettings().settings
 
-    if msg.user.name in set(settings['Excluded Users']):
+    if msg.user.name in settings['Excluded Users']:
         return
     
     words = filter_word_list(msg.text.strip().lower().split())
