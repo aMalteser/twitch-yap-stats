@@ -6,30 +6,17 @@ def clear() -> None:
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
-def print_settings() -> None:
-    settings = UserSettings().settings
-    if settings['App ID'] == '':
-        print('App ID not set', end=', ')
-    else:
-        print('App ID set', end=', ')
-    if settings['App Secret'] == '':
-        print('App Secret not set')
-    else:
-        print('App Secret set')
-    
-    print(f'Target Channel: {settings['Target Channel']}')
-    print(f'Excluded Users: {list(settings['Excluded Users'])}')
-    print(f'Logging: {'Enabled' if settings['Logging'] else 'Disabled'}')
-    print(f'Padding: {settings['Padding']}', end='\n\n')
-
-
 def print_options() -> None:
-    print('1. Set App ID')
-    print('2. Set App Secret')
-    print('3. Set Target Channel')
-    print('4. Toggle Excluded User')
-    print('5. Toggle Logging')
-    print('6. Set Padding', end='\n\n')
+    settings = UserSettings().settings
+    print(f'1. {'Set' if settings["App ID"] == '' else 'Change'} App ID')
+    print(f'2. {'Set' if settings["App Secret"] == '' else 'Change'} App Secret')
+    if settings['Target Channel'] == '':
+        print('3. Set Target Channel')
+    else:
+        print(f'3. Change Target Channel ({settings["Target Channel"]})')
+    print(f'4. Toggle Excluded User (Currently Excluded: {settings['Excluded Users']})')
+    print(f'5. Toggle Console Logging (Currently {'Enabled' if settings['Logging'] else 'Disabled'})')
+    print(f'6. Change Padding (Currently {settings['Padding']})', end='\n\n')
     print('r. Run Bot')
     print('q. Quit', end='\n\n')
 
@@ -49,17 +36,18 @@ def handle_option(option: str) -> None:
             u = input('Enter App Secret: ')
             settings['App Secret'] = u
         case '3':
-            u = input('Enter Target Channel: ')
+            print(f'Current Target Channel: {settings['Target Channel']}')
+            u = input('New Target Channel: ')
             settings['Target Channel'] = u
         case '4':
-            u = input('Enter Excluded User: ')
+            print(f'Current Excluded Users: {settings['Excluded Users']}')
+            u = input('Enter User to Toggle: ')
             if u in settings['Excluded Users']:
                 settings['Excluded Users'].remove(u)
-            else:
+            elif u != '':
                 settings['Excluded Users'].add(u)
         case '5':
             settings['Logging'] = not settings['Logging']
-            u = 'saved'
         case '6':
             try:
                 u = int(input('Enter Padding: '))
@@ -67,17 +55,16 @@ def handle_option(option: str) -> None:
             except ValueError:
                 return
 
-    if u == '':
+    if u == '' and option != '5':
         return
 
     user_settings.settings = settings
     user_settings.save_to_file()
-    
+
 
 def prompt_loop() -> None:
     while True:
         clear()
-        print_settings()
         print_options()
 
         user_input = input('Enter option: ').lower()
@@ -86,5 +73,5 @@ def prompt_loop() -> None:
         if user_input == 'q':
             exit()
         handle_option(user_input)
-        
+
     clear()

@@ -44,7 +44,6 @@ async def twitch_setup():
     auth = UserAuthenticator(twitch, TARGET_SCOPE, url=MY_URL)
 
 
-
 if __name__ == '__main__':
     user_settings = UserSettings()
     if user_settings.settings['App ID'] == '':
@@ -53,7 +52,7 @@ if __name__ == '__main__':
     if user_settings.settings['App Secret'] == '':
         user_settings.settings['App Secret'] = input('Enter App Secret (Do not expose): ')
         user_settings.save_to_file()
-    
+
     asyncio.run(twitch_setup())
     print('If no errors printed, server is running')
-    
+

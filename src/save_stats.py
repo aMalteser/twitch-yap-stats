@@ -14,9 +14,8 @@ def avg_message_length(user_stats: UserStats) -> float:
 def curve(x: float):
     return math.pow(2, x)
 
-'''
-Calculate 'yap' factor based on collected stats, many magic numbers are found here
-'''
+
+# Calculate 'yap' factor based on collected stats, many magic numbers are found here
 def calc_yap_factor(user_stats: UserStats) -> float:
     scalar = user_stats.letter_count ** 0.75
     uniq_word_ratio = (len(user_stats.unique_words) ** 1.2) / user_stats.messages
@@ -31,10 +30,10 @@ def save_df(df_full: pd.DataFrame, df_display: pd.DataFrame, name: str, encode_t
     output_path = os.path.join(os.path.dirname(abs_path), os.pardir, 'output', settings['Target Channel'])
     if not os.path.exists(output_path):
         os.makedirs(output_path)
-        
+
     # Full log file
     df_full.to_csv(os.path.join(output_path, f'{start_time}-{name}.csv'), mode='w', encoding=encode_type, index=False)
-    
+
     # df_brief overwrites the same file, is more consise so that it can be put in OBS
     with open(os.path.join(output_path, f'{name}.txt'), 'w', encoding=encode_type) as f:
         if UserSettings.settings['Padding'] > 0:
@@ -78,9 +77,9 @@ def get_df_word_stats(word_apperances: dict[str, int]) -> pd.DataFrame:
 def save_yap_word_stats(yap_stats: dict[str, UserStats], word_apperances: dict[str, int], start_time: str) -> None:
     yap_df = get_df_yap_stats(yap_stats)
     yap_df_display = yap_df.filter(['username', 'yap cost', 'avg. message len', 'vocab'], axis=1)
-    
+
     words_df = get_df_word_stats(word_apperances)
 
     save_df(yap_df, yap_df_display, 'yap', 'UTF-8', start_time)
     save_df(words_df, words_df, 'words', 'UTF-16', start_time) # UTF-16 needed for certain emojis
-    
+

@@ -40,7 +40,7 @@ def handle_message(username: str, words: list[str]) -> None:
 
     for w in words:
         WORD_APPEARANCES[w] += 1
-    
+
     if settings['Logging']:
         print(f'{username} has now sent {user_stats.messages} messages')
 
@@ -50,11 +50,11 @@ async def on_message(msg: ChatMessage) -> None:
 
     if msg.user.name in settings['Excluded Users']:
         return
-    
+
     words = filter_word_list(msg.text.strip().lower().split())
     if len(words) == 0:
         return
-    
+
     handle_message(msg.user.name, words)
 
 
@@ -75,7 +75,7 @@ async def run_bot() -> None:
     auth = UserAuthenticator(twitch, USER_SCOPE)
     token, refresh_token = await auth.authenticate()
     await twitch.set_user_authentication(token, USER_SCOPE, refresh_token)
-    
+
     chat = await Chat(twitch)
 
     chat.register_event(ChatEvent.READY, on_ready)
@@ -92,6 +92,7 @@ async def run_bot() -> None:
         await twitch.close()
         # Save once the twitch thread has closed, to not get anymore writes to dictionaries
         print('Saving stats')
+        global START_TIME
         save_yap_word_stats(YAP_STATS, WORD_APPEARANCES, START_TIME)
 
 
@@ -109,6 +110,6 @@ if __name__ == '__main__':
         if settings['Target Channel'] == '':
             print('Target Channel not set, exiting')
             exit()
-        
+
         asyncio.run(run_bot())
-    
+
