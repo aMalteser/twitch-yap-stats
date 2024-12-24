@@ -81,5 +81,4 @@ def save_yap_word_stats(yap_stats: dict[str, UserStats], word_apperances: dict[s
     words_df = get_df_word_stats(word_apperances)
 
     save_df(yap_df, yap_df_display, 'yap', 'UTF-8', start_time)
-    save_df(words_df, words_df, 'words', 'UTF-16', start_time) # UTF-16 needed for certain emojis
-
+    save_df(words_df, words_df, 'words', 'UTF-16', start_time)  # UTF-16 needed for certain emojis
