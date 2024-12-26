@@ -1,17 +1,18 @@
-from twitchAPI.twitch import Twitch
-from twitchAPI.oauth import UserAuthenticator
-from twitchAPI.type import AuthScope, ChatEvent
-from twitchAPI.chat import Chat, EventData, ChatMessage
-from usersettings import UserSettings
-from userstats import UserStats
-from collections import defaultdict
-from user_prompt import prompt_loop
-from save_stats import save_yap_word_stats
-from datetime import datetime
 import asyncio
+from collections import defaultdict
+from datetime import datetime
+
 import pytz
 import validators
+from twitchAPI.chat import Chat, ChatMessage, EventData
+from twitchAPI.oauth import UserAuthenticator
+from twitchAPI.twitch import Twitch
+from twitchAPI.type import AuthScope, ChatEvent
 
+from save_stats import save_yap_word_stats
+from user_prompt import prompt_loop
+from usersettings import UserSettings
+from userstats import UserStats
 
 USER_SCOPE = [AuthScope.CHAT_READ]
 
@@ -41,14 +42,14 @@ def handle_message(username: str, words: list[str]) -> None:
     for w in words:
         WORD_APPEARANCES[w] += 1
 
-    if settings['Logging']:
-        print(f'{username} has now sent {user_stats.messages} messages')
+    if settings["Logging"]:
+        print(f"{username} has now sent {user_stats.messages} messages")
 
 
 async def on_message(msg: ChatMessage) -> None:
     settings = UserSettings().settings
 
-    if msg.user.name in settings['Excluded Users']:
+    if msg.user.name in settings["Excluded Users"]:
         return
 
     words = filter_word_list(msg.text.strip().lower().split())
@@ -60,18 +61,18 @@ async def on_message(msg: ChatMessage) -> None:
 
 async def on_ready(ready_event: EventData) -> None:
     global START_TIME
-    tz_UTC = pytz.timezone('UTC')
-    START_TIME = datetime.now(tz_UTC).strftime('%y-%m-%d-%H-%M')
+    tz_UTC = pytz.timezone("UTC")
+    START_TIME = datetime.now(tz_UTC).strftime("%y-%m-%d-%H-%M")
 
     settings = UserSettings().settings
     print(f'Bot is ready for work, joining channel {settings["Target Channel"]}')
-    await ready_event.chat.join_room(settings['Target Channel'])
+    await ready_event.chat.join_room(settings["Target Channel"])
 
 
 async def run_bot() -> None:
     settings = UserSettings().settings
 
-    twitch = await Twitch(settings['App ID'], settings['App Secret'])
+    twitch = await Twitch(settings["App ID"], settings["App Secret"])
     auth = UserAuthenticator(twitch, USER_SCOPE)
     token, refresh_token = await auth.authenticate()
     await twitch.set_user_authentication(token, USER_SCOPE, refresh_token)
@@ -85,30 +86,30 @@ async def run_bot() -> None:
 
     # lets run till we press enter in the console
     try:
-        input('press ENTER to stop\n')
+        input("press ENTER to stop\n")
     finally:
         # now we can close the chat bot and the twitch api client
         chat.stop()
         await twitch.close()
         # Save once the twitch thread has closed, to not get anymore writes to dictionaries
-        print('Saving stats')
+        print("Saving stats")
         global START_TIME
         save_yap_word_stats(YAP_STATS, WORD_APPEARANCES, START_TIME)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     while True:
         prompt_loop()
 
         settings = UserSettings().settings
-        if settings['App ID'] == '':
-            print('App ID not set, exiting')
+        if settings["App ID"] == "":
+            print("App ID not set, exiting")
             exit()
-        if settings['App Secret'] == '':
-            print('App Secret not set, exiting')
+        if settings["App Secret"] == "":
+            print("App Secret not set, exiting")
             exit()
-        if settings['Target Channel'] == '':
-            print('Target Channel not set, exiting')
+        if settings["Target Channel"] == "":
+            print("Target Channel not set, exiting")
             exit()
 
         asyncio.run(run_bot())
