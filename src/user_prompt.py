@@ -15,7 +15,9 @@ def print_options() -> None:
         print("3. Set Target Channel")
     else:
         print(f'3. Change Target Channel ({settings["Target Channel"]})')
-    print(f"4. Toggle Excluded User (Currently Excluded: {list(settings['Excluded Users'])})")
+    print(
+        f"4. Toggle Excluded User (Currently Excluded: {list(settings['Excluded Users'])})"
+    )
     print(
         f"5. Toggle Console Logging (Currently {'Enabled' if settings['Logging'] else 'Disabled'})"
     )
@@ -45,10 +47,7 @@ def handle_option(option: str) -> None:
         case "4":
             print(f"Current Excluded Users: {settings['Excluded Users']}")
             u = input("Enter User to Toggle: ")
-            if u in settings["Excluded Users"]:
-                settings["Excluded Users"].remove(u)
-            elif u != "":
-                settings["Excluded Users"].add(u)
+            settings["Excluded Users"] ^= set(u)
         case "5":
             settings["Logging"] = not settings["Logging"]
         case "6":
