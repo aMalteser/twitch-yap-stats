@@ -70,6 +70,7 @@ async def on_ready(ready_event: EventData) -> None:
 
 
 async def run_bot() -> None:
+    """Starts the bot, connects it twitch and registers `on_ready` and `on_message`."""
     settings = UserSettings().settings
 
     twitch = await Twitch(settings["App ID"], settings["App Secret"])
@@ -97,7 +98,7 @@ async def run_bot() -> None:
         save_yap_word_stats(YAP_STATS, WORD_APPEARANCES, START_TIME)
 
 
-if __name__ == "__main__":
+def main() -> None:
     while True:
         prompt_loop()
 
@@ -113,3 +114,7 @@ if __name__ == "__main__":
             exit()
 
         asyncio.run(run_bot())
+
+
+if __name__ == "__main__":
+    main()
