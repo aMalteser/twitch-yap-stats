@@ -19,7 +19,7 @@ def curve(x: float):
 
 # Calculate 'yap' factor based on collected stats, many magic numbers are found here
 def calc_yap_factor(user_stats: UserStats) -> float:
-    scalar = user_stats.letter_count ** 0.75
+    scalar = user_stats.letter_count**0.75
     uniq_word_ratio = (len(user_stats.unique_words) ** 1.2) / user_stats.messages
     avg_ltrs = avg_message_length(user_stats)
     return math.log(scalar * (uniq_word_ratio + avg_ltrs))
