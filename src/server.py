@@ -48,7 +48,7 @@ async def twitch_setup():
     auth = UserAuthenticator(twitch, TARGET_SCOPE, url=MY_URL)
 
 
-def main():
+def server_main():
     us = UserSettings()
     while us.settings["App ID"] == "" or us.settings["App Secret"] == "":
         print("App ID or Secret not set, running setup\n")
@@ -62,8 +62,8 @@ def main():
         print(e)
         print("Something went wrong")
         server_prompt_loop()
-        main()
+        server_main()
 
 
 if __name__ == "__main__":
-    main()
+    server_main()
