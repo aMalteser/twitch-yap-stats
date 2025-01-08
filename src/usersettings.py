@@ -24,23 +24,25 @@ class UserSettings:
                 }
                 p = Path(__file__)
                 cls.file_loc = p.parents[1] / "user_settings.json"
-                cls.load_from_file(cls)
+                cls.load_from_file()
 
         return cls._instance
 
+    @classmethod
     def save_to_file(cls) -> None:
         cls.settings["Excluded Users"] = list(cls.settings["Excluded Users"])
         with open(cls.file_loc, "w") as fp:
             json.dump(cls.settings, fp, indent=4)
         cls.settings["Excluded Users"] = set(cls.settings["Excluded Users"])
 
+    @classmethod
     def load_from_file(cls) -> None:
         if not os.path.exists(cls.file_loc):
-            cls.save_to_file(cls)
+            cls.save_to_file()
 
         with open(cls.file_loc, "r") as fp:
             try:
                 cls.settings.update(json.load(fp))
                 cls.settings["Excluded Users"] = set(cls.settings["Excluded Users"])
             except json.JSONDecodeError:
-                cls.save_to_file(cls)
+                cls.save_to_file()
