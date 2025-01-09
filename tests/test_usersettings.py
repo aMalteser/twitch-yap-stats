@@ -16,6 +16,7 @@ class UserSettingsTest(unittest.TestCase):
             os.rename(original, backup)
         else:
             os.remove(original)
+        UserSettings._instance = None
 
     def tearDown(self):
         original = os.path.abspath(__file__ + "/../../user_settings.json")
