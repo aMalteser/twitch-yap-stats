@@ -10,21 +10,26 @@ from usersettings import UserSettings
 
 class UserSettingsTest(unittest.TestCase):
     def setUp(self) -> None:
-        original = os.path.abspath(__file__ + "/../../user_settings.json")
-        backup = os.path.abspath(__file__ + "/../../user_settings.json.bak")
-        if os.path.exists(original) and not os.path.exists(backup):
-            os.rename(original, backup)
-        else:
-            os.remove(original)
-        UserSettings._instance = None
+        us = UserSettings()
+        original = os.path.abspath(us.file_loc)
+        backup = os.path.abspath(original + ".bak")
+
+        if os.path.exists(original):
+            if os.path.exists(backup):
+                os.remove(original)
+            else:
+                os.rename(original, backup)
+        us.clear_settings()
 
     def tearDown(self):
-        original = os.path.abspath(__file__ + "/../../user_settings.json")
-        backup = os.path.abspath(__file__ + "/../../user_settings.json.bak")
+        us = UserSettings()
+        original = os.path.abspath(us.file_loc)
+        backup = os.path.abspath(original + ".bak")
+
         if os.path.exists(original):
             os.remove(original)
-        os.rename(backup, original)
-        UserSettings._instance = None
+        if os.path.exists(backup):
+            os.rename(backup, original)
 
     def test_singleton(self) -> None:
         us1 = UserSettings()
@@ -66,8 +71,8 @@ class UserSettingsTest(unittest.TestCase):
     def test_load_from_file_creates_file_if_not_exists(self) -> None:
         us = UserSettings()
         self.assertTrue(us.settings["App ID"] == "")
+        self.assertTrue(os.path.exists(us.file_loc))
+        os.remove(us.file_loc)
 
         us.load_from_file()
-        self.assertTrue(
-            os.path.exists(os.path.abspath(__file__ + "/../../user_settings.json"))
-        )
+        self.assertTrue(os.path.exists(os.path.abspath(us.file_loc)))
