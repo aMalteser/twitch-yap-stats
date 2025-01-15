@@ -43,14 +43,14 @@ async def login_confirm():
 async def twitch_setup():
     global twitch, auth
     twitch = await Twitch(
-        UserSettings.settings["App ID"], UserSettings.settings["App Secret"]
+        UserSettings.settings.app_id, UserSettings.settings.app_secret
     )
     auth = UserAuthenticator(twitch, TARGET_SCOPE, url=MY_URL)
 
 
 def server_main():
     us = UserSettings()
-    while us.settings["App ID"] == "" or us.settings["App Secret"] == "":
+    while us.settings.app_id == "" or us.settings.app_secret == "":
         print("App ID or Secret not set, running setup\n")
         server_prompt_loop()
 

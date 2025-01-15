@@ -42,14 +42,14 @@ def handle_message(username: str, words: list[str]) -> None:
     for w in words:
         WORD_APPEARANCES[w] += 1
 
-    if settings["Logging"]:
+    if settings.logging:
         print(f"{username} has now sent {user_stats.messages} messages")
 
 
 async def on_message(msg: ChatMessage) -> None:
     settings = UserSettings().settings
 
-    if msg.user.name in settings["Excluded Users"]:
+    if msg.user.name in settings.excluded_users:
         return
 
     words = filter_word_list(msg.text.strip().lower().split())
@@ -65,15 +65,15 @@ async def on_ready(ready_event: EventData) -> None:
     START_TIME = datetime.now(tz_UTC).strftime("%y-%m-%d-%H-%M")
 
     settings = UserSettings().settings
-    print(f'Bot is ready for work, joining channel {settings["Target Channel"]}')
-    await ready_event.chat.join_room(settings["Target Channel"])
+    print(f"Bot is ready for work, joining channel {settings.target_channel}")
+    await ready_event.chat.join_room(settings.target_channel)
 
 
 async def run_bot() -> None:
     """Starts the bot, connects it twitch and registers `on_ready` and `on_message`."""
     settings = UserSettings().settings
 
-    twitch = await Twitch(settings["App ID"], settings["App Secret"])
+    twitch = await Twitch(settings.app_id, settings.app_secret)
     auth = UserAuthenticator(twitch, USER_SCOPE)
     token, refresh_token = await auth.authenticate()
     await twitch.set_user_authentication(token, USER_SCOPE, refresh_token)
@@ -103,13 +103,13 @@ def main() -> None:
         prompt_loop()
 
         settings = UserSettings().settings
-        if settings["App ID"] == "":
+        if settings.app_id == "":
             print("App ID not set, exiting")
             exit()
-        if settings["App Secret"] == "":
+        if settings.app_secret == "":
             print("App Secret not set, exiting")
             exit()
-        if settings["Target Channel"] == "":
+        if settings.target_channel == "":
             print("Target Channel not set, exiting")
             exit()
 
