@@ -7,6 +7,8 @@ class UserStats:
         self.unique_words: set[str] = set()
 
     def update_stats(self, words: list[str]) -> None:
+        if not words:
+            return
         self.letter_count += len("".join(words))
         self.word_count += len(words)
         self.messages += 1
