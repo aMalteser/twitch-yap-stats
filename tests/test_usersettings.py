@@ -5,7 +5,7 @@ import unittest
 
 sys.path.append(__file__ + "/../../src")
 
-from usersettings import UserSettings
+from usersettings import SettingsData, UserSettings
 
 
 class UserSettingsTest(unittest.TestCase):
@@ -76,3 +76,80 @@ class UserSettingsTest(unittest.TestCase):
 
         us.load_from_file()
         self.assertTrue(os.path.exists(os.path.abspath(us.file_loc)))
+
+
+class TestSettingsData(unittest.TestCase):
+    def test_empty_init(self) -> None:
+        sd = SettingsData()
+        self.assertEqual(
+            [
+                sd.app_id,
+                sd.app_secret,
+                sd.target_channel,
+                sd.excluded_users,
+                sd.logging,
+                sd.padding,
+            ],
+            ["", "", "", set(), True, 0],
+        )
+
+    def test_to_dict_keys(self):
+        sd = SettingsData()
+        self.assertEqual(
+            list(sd.to_dict().keys()),
+            [
+                "App ID",
+                "App Secret",
+                "Target Channel",
+                "Excluded Users",
+                "Logging",
+                "Padding",
+            ],
+        )
+
+    def test_to_dict_excluded_users_is_list(self):
+        sd = SettingsData()
+        sd.excluded_users = {"a", "bcd", "ef"}
+        d = sd.to_dict()
+        self.assertTrue(type(d["Excluded Users"]), list)
+
+    def test_all_dict_values_are_serialisable(self):
+        sd = SettingsData()
+        d = sd.to_dict()
+        try:
+            json.dumps(d)
+        except TypeError:
+            self.assertTrue(False)
+
+    def test_from_empty_dict_no_overwrite(self):
+        sd = SettingsData("123", "456", "abc", {"def", "ghi"}, False, 1)
+        d = dict()
+        sd.from_dict(d)
+        self.assertEqual(
+            [
+                sd.app_id,
+                sd.app_secret,
+                sd.target_channel,
+                sd.excluded_users,
+                sd.logging,
+                sd.padding,
+            ],
+            ["123", "456", "abc", {"def", "ghi"}, False, 1],
+        )
+
+    def test_dict_with_invalid_keys(self):
+        sd = SettingsData()
+        sd.app_id = "123"
+        d = {"App ID": "456", "Not A Key": "789"}
+        sd.from_dict(d)
+        self.assertEqual(
+            [
+                sd.app_id,
+                sd.app_secret,
+                sd.target_channel,
+                sd.excluded_users,
+                sd.logging,
+                sd.padding,
+            ],
+            ["456", "", "", set(), True, 0],
+        )
