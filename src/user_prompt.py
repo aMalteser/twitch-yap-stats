@@ -16,10 +16,13 @@ def print_options() -> None:
     else:
         print(f"3. Change Target Channel ({settings.target_channel})")
     print(
-        f"4. Toggle Excluded User (Currently Excluded: {list(settings.excluded_users)})"
+        f"4. Toggle Excluded User (Currently Excluded: {
+            list(settings.excluded_users)})"
     )
     print(
-        f"5. Toggle Console Logging (Currently {'Enabled' if settings.logging else 'Disabled'})"
+        f"5. Toggle Console Logging (Currently {
+            'Enabled' if settings.logging else 'Disabled'
+        })"
     )
     print(f"6. Change Padding (Currently {settings.padding})", end="\n\n")
     print("r. Run Bot")
@@ -98,7 +101,10 @@ def prompt_loop() -> None:
 def print_options_server() -> None:
     settings = UserSettings().settings
     print(f"1. {'Set' if settings.app_id == '' else 'Change'} App ID")
-    print(f"2. {'Set' if settings.app_secret == '' else 'Change'} App Secret\n")
+    print(
+        f"2. {'Set' if settings.app_secret ==
+          '' else 'Change'} App Secret\n"
+    )
     print("r. Run server")
     print("q. Quit\n")
 
