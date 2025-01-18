@@ -46,12 +46,8 @@ def print_option(option: str) -> None:
         case "4":
             print(f"Current Excluded Users: {list(settings.excluded_users)}")
             u = input("Enter User to Toggle: ")
-        case "5":
-            u
         case "6":
             u = input("Enter Padding: ")
-        case _:
-            return
 
     if u == "" and option != "5":
         return
