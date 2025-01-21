@@ -26,6 +26,10 @@ def filter_urls(word_list: list[str]) -> list[str]:
     return list(filter(lambda w: not validators.url(w), word_list))
 
 
+def filter_commands(word_list: list[str]) -> list[str]:
+    return word_list if not word_list[0].startswith("!") else []
+
+
 def filter_word_list(word_list: list[str]) -> list[str]:
     return filter_urls(word_list)
 
