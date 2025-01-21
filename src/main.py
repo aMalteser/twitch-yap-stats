@@ -22,13 +22,12 @@ WORD_APPEARANCES: dict[str, int]
 START_TIME: str
 
 
-def check_url(word_list: list[str]) -> list[bool]:
-    return map(lambda x: validators.url(x), word_list)
+def filter_urls(word_list: list[str]) -> list[str]:
+    return list(filter(lambda w: not validators.url(w), word_list))
 
 
 def filter_word_list(word_list: list[str]) -> list[str]:
-    url_check = check_url(word_list)
-    return [word for word, is_url in zip(word_list, url_check) if not is_url]
+    return filter_urls(word_list)
 
 
 def handle_message(username: str, words: list[str]) -> None:
