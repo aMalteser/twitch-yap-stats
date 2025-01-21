@@ -30,7 +30,12 @@ def filter_word_list(word_list: list[str]) -> list[str]:
     return filter_urls(word_list)
 
 
-def handle_message(username: str, words: list[str]) -> None:
+def handle_message(username: str, msg: str) -> None:
+    words = filter_word_list(msg.strip().lower().split())
+    # ignore messages that are fully filtered out
+    if len(words) == 0:
+        return
+
     settings = UserSettings().settings
 
     if username not in YAP_STATS:
@@ -51,11 +56,7 @@ async def on_message(msg: ChatMessage) -> None:
     if msg.user.name in settings.excluded_users:
         return
 
-    words = filter_word_list(msg.text.strip().lower().split())
-    if len(words) == 0:
-        return
-
-    handle_message(msg.user.name, words)
+    handle_message(msg.user.name, msg.text)
 
 
 async def on_ready(ready_event: EventData) -> None:
@@ -73,6 +74,7 @@ async def run_bot() -> None:
     global YAP_STATS, WORD_APPEARANCES, START_TIME
     YAP_STATS = {}
     WORD_APPEARANCES = defaultdict(int)
+
     settings = UserSettings().settings
 
     twitch = await Twitch(settings.app_id, settings.app_secret)
