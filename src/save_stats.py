@@ -33,11 +33,7 @@ def save_df(
     start_time: str,
 ) -> None:
     settings = UserSettings().settings
-    # equivalent of ./src/../output/TARGET_CHANNEL
-    abs_path = os.path.abspath(__file__)
-    output_path = os.path.join(
-        os.path.dirname(abs_path), os.pardir, "output", settings["Target Channel"]
-    )
+    output_path = os.path.abspath(__file__ + f"/../../output/{settings.target_channel}")
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
@@ -51,8 +47,8 @@ def save_df(
 
     # df_brief overwrites the same file, is more consise so that it can be put in OBS
     with open(os.path.join(output_path, f"{name}.txt"), "w", encoding=encode_type) as f:
-        if UserSettings.settings["Padding"] > 0:
-            f.write("\n" * UserSettings.settings["Padding"])
+        if UserSettings.settings.padding > 0:
+            f.write("\n" * UserSettings.settings.padding)
 
         f.write(tabulate(df_display, headers="keys", tablefmt="psql", showindex=False))
 

@@ -7,114 +7,125 @@ def clear() -> None:
     os.system("cls" if os.name == "nt" else "clear")
 
 
-def print_options() -> None:
+def print_options_common() -> None:
     settings = UserSettings().settings
-    print(f'1. {'Set' if settings["App ID"] == '' else 'Change'} App ID')
-    print(f'2. {'Set' if settings["App Secret"] == '' else 'Change'} App Secret')
-    if settings["Target Channel"] == "":
+    print(f"1. {'Set' if settings.app_id == '' else 'Change'} App ID")
+    print(f"2. {'Set' if settings.app_secret == '' else 'Change'} App Secret")
+
+
+def print_options_all() -> None:
+    settings = UserSettings().settings
+    print_options_common()
+
+    if settings.target_channel == "":
         print("3. Set Target Channel")
     else:
-        print(f'3. Change Target Channel ({settings["Target Channel"]})')
+        print(f"3. Change Target Channel ({settings.target_channel})")
+
     print(
-        f"4. Toggle Excluded User (Currently Excluded: {list(settings['Excluded Users'])})"
+        f"4. Toggle Excluded User (Currently Excluded: {list(settings.excluded_users)})"
     )
     print(
-        f"5. Toggle Console Logging (Currently {'Enabled' if settings['Logging'] else 'Disabled'})"
+        f"5. Toggle Console Logging (Currently {
+            'Enabled' if settings.logging else 'Disabled'
+        })"
     )
-    print(f"6. Change Padding (Currently {settings['Padding']})", end="\n\n")
-    print("r. Run Bot")
+    print(f"6. Change Padding (Currently {settings.padding})")
+    print_options_quit()
+
+
+def print_options_quit(type: str = "App") -> None:
+    print()
+    print(f"r. Run {type}")
     print("q. Quit", end="\n\n")
 
 
-def handle_option(option: str) -> None:
+def print_options_server() -> None:
+    print_options_common()
+    print_options_quit("Server")
+
+
+def handle_user_input(option: str, from_server: bool) -> None:
     clear()
     print("Press enter to cancel")
 
-    user_settings = UserSettings()
-    settings = user_settings.settings.copy()
-    u: str = ""
-    match option:
-        case "1":
-            u = input("Enter App ID: ")
-            settings["App ID"] = u
-        case "2":
-            u = input("Enter App Secret: ")
-            settings["App Secret"] = u
-        case "3":
-            print(f"Current Target Channel: {settings['Target Channel']}")
-            u = input("New Target Channel: ")
-            settings["Target Channel"] = u
-        case "4":
-            print(f"Current Excluded Users: {settings['Excluded Users']}")
-            u = input("Enter User to Toggle: ")
-            settings["Excluded Users"] ^= set(u)
-        case "5":
-            settings["Logging"] = not settings["Logging"]
-        case "6":
-            try:
-                u = int(input("Enter Padding: "))
-                settings["Padding"] = max(0, u)
-            except ValueError:
-                return
+    user_input = get_user_input(option, from_server)
 
-    if u == "" and option != "5":
+    # Padding option will always return ""
+    # should only be changed when not from server settings
+    if user_input == "" and (option != "5" and not from_server):
         return
 
-    user_settings.settings = settings
+    # No need to check again if from server
+    update_option(option, user_input)
+
+
+def get_user_input(option: str, from_server: bool) -> str:
+    settings = UserSettings().settings
+    match (option, from_server):
+        case "1", _:
+            return input("Enter App ID: ")
+        case "2", _:
+            return input("Enter App Secret: ")
+        case "3", False:
+            print(f"Current Target Channel: {settings.target_channel}")
+            return input("New Target Channel: ")
+        case "4", False:
+            print(f"Current Excluded Users: {list(settings.excluded_users)}")
+            return input("Enter User to Toggle: ")
+        case "6", False:
+            return input("Enter Padding: ")
+
+    return ""
+
+
+def update_option(option: str, new_val: str):
+    user_settings = UserSettings()
+    settings = user_settings.settings
+    match option:
+        case "1":
+            settings.app_id = new_val
+        case "2":
+            settings.app_secret = new_val
+        case "3":
+            settings.target_channel = new_val.lower()
+        case "4":
+            if new_val in settings.excluded_users:
+                settings.excluded_users.remove(new_val.lower())
+            else:
+                settings.excluded_users.add(new_val.lower())
+        case "5":
+            settings.logging = not (settings.logging)
+        case "6":
+            try:
+                settings.padding = max(0, int(new_val))
+            except ValueError:
+                return
     user_settings.save_to_file()
 
 
 def prompt_loop() -> None:
     while True:
         clear()
-        print_options()
+        print_options_all()
 
-        user_input = input("Enter option: ").lower()
-        if user_input == "r":
+        user_option = input("Enter option: ").lower()
+        if user_option == "r":
             break
-        if user_input == "q":
+        if user_option == "q":
             exit()
-        handle_option(user_input)
+        handle_user_input(user_option, False)
 
     clear()
-
-
-def print_options_server() -> None:
-    settings = UserSettings().settings
-    print(f'1. {'Set' if settings["App ID"] == '' else 'Change'} App ID')
-    print(f'2. {'Set' if settings["App Secret"] == '' else 'Change'} App Secret\n')
-    print("r. Run server")
-    print("q. Quit\n")
-
-
-def handle_option_server(option: str) -> None:
-    clear()
-    print("Press enter to cancel")
-
-    user_settings = UserSettings()
-    settings = user_settings.settings.copy()
-    u: str = ""
-    match option:
-        case "1":
-            u = input("Enter App ID: ")
-            settings["App ID"] = u
-        case "2":
-            u = input("Enter App Secret: ")
-            settings["App Secret"] = u
-
-    if u == "":
-        return
-    user_settings.settings = settings
-    user_settings.save_to_file()
 
 
 def server_prompt_loop() -> None:
     while True:
         print_options_server()
 
-        user_input = input("Enter option: ").lower()
-        if user_input == "r":
+        user_option = input("Enter option: ").lower()
+        if user_option == "r":
             break
-        if user_input == "q":
+        if user_option == "q":
             exit()
-        handle_option_server(user_input)
+        handle_user_input(user_option, True)
