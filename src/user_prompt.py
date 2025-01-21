@@ -53,7 +53,7 @@ def handle_user_input(option: str, from_server: bool) -> None:
 
     # Padding option will always return ""
     # should only be changed when not from server settings
-    if user_input == "" and (option != "5" and not from_server):
+    if user_input == "" and (option != "5" or from_server):
         return
 
     # No need to check again if from server
