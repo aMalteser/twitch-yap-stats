@@ -14,7 +14,7 @@ from user_prompt import prompt_loop
 from usersettings import UserSettings
 from userstats import UserStats
 
-USER_SCOPE = [AuthScope.CHAT_READ]
+USER_SCOPE: list[AuthScope] = [AuthScope.CHAT_READ]
 
 YAP_STATS: dict[str, UserStats] = {}
 WORD_APPEARANCES: dict[str, int] = defaultdict(int)
