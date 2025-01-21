@@ -16,8 +16,8 @@ from userstats import UserStats
 
 USER_SCOPE: list[AuthScope] = [AuthScope.CHAT_READ]
 
-YAP_STATS: dict[str, UserStats] = {}
-WORD_APPEARANCES: dict[str, int] = defaultdict(int)
+YAP_STATS: dict[str, UserStats]
+WORD_APPEARANCES: dict[str, int]
 
 START_TIME: str
 
@@ -71,6 +71,9 @@ async def on_ready(ready_event: EventData) -> None:
 
 async def run_bot() -> None:
     """Starts the bot, connects it twitch and registers `on_ready` and `on_message`."""
+    global YAP_STATS, WORD_APPEARANCES, START_TIME
+    YAP_STATS = {}
+    WORD_APPEARANCES = defaultdict(int)
     settings = UserSettings().settings
 
     twitch = await Twitch(settings.app_id, settings.app_secret)
@@ -92,9 +95,8 @@ async def run_bot() -> None:
         # now we can close the chat bot and the twitch api client
         chat.stop()
         await twitch.close()
-        # Save once the twitch thread has closed, to not get anymore writes to dictionaries
+        # Save once the twitch thread has closed, preventing more writes to dictionaries
         print("Saving stats")
-        global START_TIME
         save_yap_word_stats(YAP_STATS, WORD_APPEARANCES, START_TIME)
 
 
