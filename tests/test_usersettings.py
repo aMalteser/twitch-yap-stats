@@ -1,14 +1,11 @@
 import json
 import os
-import sys
 import unittest
 
-sys.path.append(__file__ + "/../../src")
-
-from usersettings import SettingsData, UserSettings
+from src.usersettings import SettingsData, UserSettings
 
 
-class UserSettingsTest(unittest.TestCase):
+class TestUserSettings(unittest.TestCase):
     def setUp(self) -> None:
         us = UserSettings()
         original = os.path.abspath(us.file_loc)
@@ -119,7 +116,7 @@ class TestSettingsData(unittest.TestCase):
         try:
             json.dumps(d)
         except TypeError:
-            self.assertTrue(False)
+            self.fail("Unserialisable type found")
 
     def test_from_empty_dict_no_overwrite(self):
         sd = SettingsData("123", "456", "abc", {"def", "ghi"}, False, 1)
