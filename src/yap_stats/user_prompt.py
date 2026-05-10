@@ -1,10 +1,11 @@
 import os
+import subprocess
 
-from usersettings import UserSettings
+from yap_stats.usersettings import UserSettings
 
 
 def clear() -> None:
-    os.system("cls" if os.name == "nt" else "clear")
+    subprocess.call("cls" if os.name == "nt" else "clear")
 
 
 def print_options_common() -> None:
@@ -22,14 +23,8 @@ def print_options_all() -> None:
     else:
         print(f"3. Change Target Channel ({settings.target_channel})")
 
-    print(
-        f"4. Toggle Excluded User (Currently Excluded: {list(settings.excluded_users)})"
-    )
-    print(
-        f"5. Toggle Console Logging (Currently {
-            'Enabled' if settings.logging else 'Disabled'
-        })"
-    )
+    print(f"4. Toggle Excluded User (Currently Excluded: {list(settings.excluded_users)})")
+    print(f"5. Toggle Console Logging (Currently {'Enabled' if settings.logging else 'Disabled'})")
     print(f"6. Change Padding (Currently {settings.padding})")
     print_options_quit()
 

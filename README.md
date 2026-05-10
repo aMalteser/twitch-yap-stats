@@ -25,10 +25,16 @@ Silly python script to get some stats from twitch chat, such as: which user yaps
 
 #### NOTE HAS ONLY BEEN TESTED ON PYTHON 3.12
 
-- Install all requirements using `pip install -r requirements.txt`
-- Run `server.py` (This will run in the background and needs to be done only once)
+- Clone the repository
+- Download python 3.12 or higher if you don't have it already
+- Create a virtual environment and activate it (optional but recommended)
+   - `python -m venv venv`
+   - `venv\Scripts\activate` (Windows) or `source venv/bin/activate` (Unix)
+- Install uv using `pip install uv -c constraints.txt`
+- Install dependencies using `uv sync`
+- Run `yap_server` (This will run in the background and needs to be done only once)
   - You will be prompted to input your Client ID and Secret if not present
-- Run `main.py`
+- Run `yap_stats` and follow the prompts
 
 ## Todo
 

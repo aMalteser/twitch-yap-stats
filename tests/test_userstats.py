@@ -1,6 +1,6 @@
 import unittest
 
-from src.userstats import UserStats
+from yap_stats.userstats import UserStats
 
 
 class TestUserStats(unittest.TestCase):

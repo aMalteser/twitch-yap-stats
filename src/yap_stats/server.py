@@ -7,8 +7,8 @@ from twitchAPI.oauth import UserAuthenticator
 from twitchAPI.twitch import Twitch
 from twitchAPI.type import AuthScope, TwitchAPIException
 
-from user_prompt import server_prompt_loop
-from usersettings import UserSettings
+from yap_stats.user_prompt import server_prompt_loop
+from yap_stats.usersettings import UserSettings
 
 TARGET_SCOPE = [AuthScope.CHAT_EDIT, AuthScope.CHAT_READ]
 MY_URL = "http://localhost:17563/login/confirm"
@@ -42,9 +42,7 @@ async def login_confirm():
 
 async def twitch_setup():
     global twitch, auth
-    twitch = await Twitch(
-        UserSettings.settings.app_id, UserSettings.settings.app_secret
-    )
+    twitch = await Twitch(UserSettings.settings.app_id, UserSettings.settings.app_secret)
     auth = UserAuthenticator(twitch, TARGET_SCOPE, url=MY_URL)
 
 

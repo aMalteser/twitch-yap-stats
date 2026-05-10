@@ -5,8 +5,8 @@ import pandas as pd
 from scipy import stats
 from tabulate import tabulate
 
-from usersettings import UserSettings
-from userstats import UserStats
+from yap_stats.usersettings import UserSettings
+from yap_stats.userstats import UserStats
 
 
 def avg_message_length(user_stats: UserStats) -> float:
@@ -86,13 +86,9 @@ def save_yap_word_stats(
     yap_stats: dict[str, UserStats], word_apperances: dict[str, int], start_time: str
 ) -> None:
     yap_df = get_df_yap_stats(yap_stats)
-    yap_df_display = yap_df.filter(
-        ["username", "yap cost", "avg. message len", "vocab"], axis=1
-    )
+    yap_df_display = yap_df.filter(["username", "yap cost", "avg. message len", "vocab"], axis=1)
 
     words_df = get_df_word_stats(word_apperances)
 
     save_df(yap_df, yap_df_display, "yap", "UTF-8", start_time)
-    save_df(
-        words_df, words_df, "words", "UTF-16", start_time
-    )  # UTF-16 needed for certain emojis
+    save_df(words_df, words_df, "words", "UTF-16", start_time)  # UTF-16 needed for certain emojis

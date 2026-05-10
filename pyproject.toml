@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "yap_stats"
+version = "0.1.0"
+
+requires-python = ">= 3.12"
+
+dependencies = [
+    "flask",
+    "hatchling>=1.29.0",
+    "numpy",
+    "pandas",
+    "python-dotenv",
+    "pytz",
+    "ruff>=0.15.12",
+    "scipy",
+    "tabulate",
+    "twitchAPI",
+    "ty",
+    "uv",
+    "validators",
+]
+
+[dependency-groups]
+dev = ["pytest>=9.0.3"]
+
+[project.scripts]
+yap_stats = "yap_stats.main:main"
+yap_server = "yap_stats.server:server_main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/yap_stats"]

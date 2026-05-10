@@ -2,31 +2,28 @@ import json
 import os
 import unittest
 
-from src.usersettings import SettingsData, UserSettings
+from yap_stats.usersettings import SettingsData, UserSettings
 
 
 class TestUserSettings(unittest.TestCase):
     def setUp(self) -> None:
-        us = UserSettings()
-        original = os.path.abspath(us.file_loc)
-        backup = os.path.abspath(original + ".bak")
+        self.us = UserSettings()
+        self.original = os.path.abspath(self.us.file_loc)
+        self.backup = os.path.abspath(self.original + ".bak")
 
-        if os.path.exists(original):
-            if os.path.exists(backup):
-                os.remove(original)
+        if os.path.exists(self.original):
+            if os.path.exists(self.backup):
+                os.remove(self.original)
             else:
-                os.rename(original, backup)
-        us.clear_settings()
+                os.rename(self.original, self.backup)
+        self.us.clear_settings()
+        self.us.save_to_file()
 
     def tearDown(self):
-        us = UserSettings()
-        original = os.path.abspath(us.file_loc)
-        backup = os.path.abspath(original + ".bak")
-
-        if os.path.exists(original):
-            os.remove(original)
-        if os.path.exists(backup):
-            os.rename(backup, original)
+        if os.path.exists(self.original):
+            os.remove(self.original)
+        if os.path.exists(self.backup):
+            os.rename(self.backup, self.original)
 
     def test_singleton(self) -> None:
         us1 = UserSettings()
@@ -49,7 +46,7 @@ class TestUserSettings(unittest.TestCase):
 
         us.settings.app_id = "123"
         us.save_to_file()
-        with open(os.path.abspath(__file__ + "/../../user_settings.json"), "r") as f:
+        with open(os.path.abspath(us.file_loc), "r") as f:
             saved = json.load(f)
         self.assertEqual(saved["App ID"], "123")
 

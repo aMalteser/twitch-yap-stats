@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import os
 import threading
@@ -39,13 +41,13 @@ class UserSettings:
     settings: SettingsData
     file_loc: Path
 
-    def __new__(cls) -> "UserSettings":
+    def __new__(cls) -> UserSettings:
         with cls._lock:
             if cls._instance is None:
                 cls._instance = super(UserSettings, cls).__new__(cls)
                 cls.settings = SettingsData()
                 p = Path(__file__)
-                cls.file_loc = p.parents[1] / "user_settings.json"
+                cls.file_loc = p.parents[2] / "user_settings.json"
                 cls.load_from_file()
 
         return cls._instance

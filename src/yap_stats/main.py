@@ -9,10 +9,10 @@ from twitchAPI.oauth import UserAuthenticator
 from twitchAPI.twitch import Twitch
 from twitchAPI.type import AuthScope, ChatEvent
 
-from save_stats import save_yap_word_stats
-from user_prompt import prompt_loop
-from usersettings import UserSettings
-from userstats import UserStats
+from yap_stats.save_stats import save_yap_word_stats
+from yap_stats.user_prompt import prompt_loop
+from yap_stats.usersettings import UserSettings
+from yap_stats.userstats import UserStats
 
 USER_SCOPE: list[AuthScope] = [AuthScope.CHAT_READ]
 
